@@ -15,8 +15,3 @@ echo "done with retrieving info about SNP postion"
 # retrieve the info with three numbers describing one sample (1st: homozygote reference, 2nd: heterozygote, 3rd: homozygote alternative)
 cut -f 6- -d' ' $dir/Dex_genoData_SNPs.gen > $dir/plinkgen_X.txt
 echo "done with retrieving info about samples"
-
-
-# script to get 0 1 2 from  $dir/plinkgen_X.txt for each sample and each SNP (one number indicating if homo- or heterozygote)
-Rscript /Users/emy/Documents/github/multi-omics-network-integration/mpi/getGenotypefromPlink.R
-echo "done with genotyping"
