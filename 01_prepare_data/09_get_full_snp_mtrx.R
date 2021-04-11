@@ -50,7 +50,6 @@ new_x_1 <- cbind(z$ID, new_x)
 # Add DNA_ID to the mat
 colnames(new_x_1) <- c("sample", y$V1[3:length(y$V1)])
 
-
 # Keep only columns (samples) that are in the rest of the data
 
 dna.ids   <- unique(pheno[!is.na(pheno$DNAm_ID), "DNA_ID"])
@@ -64,7 +63,7 @@ changeCols <- whichcols[-1]
 new_x_2[,(changeCols):= lapply(.SD, as.integer), .SDcols = changeCols]
 str(new_x_2)
 
-new_x_3 <- cbind(z$SNP, new_x_2)
+new_x_2 <- cbind(z$SNP, new_x_2)
 
 fwrite(new_x_3, 
        paste0(kimono.data.pre, "mapping/snp_mtrx.csv"),
