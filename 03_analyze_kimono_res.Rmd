@@ -34,9 +34,9 @@ map.ilmn.tbl.fn <- paste0(data.dir.pre, "/mapping/mapping_ilmn_ensg_gene.csv") #
 map.cpg.tbl.fn  <- paste0(data.dir.pre, "/mapping/mapping_cpg_gene_ensg.csv")
 ```
 
-# 1. Load Kimono results and filter them
+## 1. Load Kimono results and filter them
 
-```{r, cache = T}
+```{r, cache = F}
 kimono.res.fn         <- paste0(data.dir.pre, "output/kimono_res_veh.csv") # experiment nr 2
 kimono.res            <- fread(kimono.res.fn)
 map.ilmn.ensg.tbl     <- read.csv2(map.ilmn.tbl.fn)
@@ -45,8 +45,8 @@ map.cpg.gene.ensg.tbl <- read.csv2(map.cpg.tbl.fn)
 map.ensg.gene.tbl     <- map.ilmn.ensg.tbl[, c("Ensemble_ID", "Gene_ID")] %>% unique() 
 ```
 
-# 2. Explore results
-```{r, cache = T}
+## 2. Explore results
+```{r, cache = F}
 kimono.net <- kimono.res[value != 0, ] 
 
 paste("Number of successful models:", length(unique(kimono.net$target)))
@@ -55,7 +55,7 @@ paste("Number of unique predictors:", length(unique(kimono.net$predictor)))
 
 ### 2.1. Check-up GEX: mapping kimono results to ILMN IDs
 
-```{r, cache = T}
+```{r, cache = F}
 kimono.merged <- merge(kimono.net[, .(target)], 
                   map.ilmn.ensg.tbl, 
                   by.x = "target", by.y = "Ensemble_ID", all.x = T, allow.cartesian = T) %>%  unique()
@@ -76,7 +76,7 @@ paste("Number of unique ENSG IDs: ", length(unique(kimono.merged$target)))
 
 ### 2.2. Check-up methylation data: mapping kimono results to CpG IDs
 
-```{r, cache = T}
+```{r, cache = F}
 kimono.merged <- merge(kimono.net[, .(target)], 
                   map.cpg.gene.ensg.tbl, 
                   by.x = "target", by.y = "Ensemble_ID", all.x = T, allow.cartesian = T) %>%  unique() %>% na.omit()
@@ -255,7 +255,7 @@ ggplot(graph.statistics[1:num.vert,], aes(x = 1:num.vert, y = betweennes.vert ))
 #### Take first 100 ENSG ID for further analysis
 
 ```{r}
-num.vert <- 100 + 3
+num.vert <- 5 + 3
 top.vert.df <- graph.statistics[4:num.vert,] %>% select(betweennes.vert) %>% mutate()
 
 top.vert.df <- merge(top.vert.df, map.ensg.gene.tbl, by.x = "row.names", by.y = "Ensemble_ID") %>% 
@@ -296,12 +296,15 @@ plot(g, vertex.label.color = "black", vertex.size = 5, vertex.label = NA)
 ```
 
 ```{r}
-num.edge.thr <- 10
+num.edge.thr <- 5
 
 deg <- degree(g, mode = "all")
 
 vertices <- vertices.unique
 vertices[, edges := deg]
+
+vertices[order(-edges)]
+
 vertices[, new_names := name]
 #vertices[edges > num.edge.thr,]
 #vertices[,.N, by = edges,][order(edges)]
@@ -317,18 +320,20 @@ vertices[omic == "expr_pheno", colour:=col[3]]
 
 vertices[!is.na(new_names), ][order(-edges)]
 
-plot(g, # layout = layout.fruchterman.reingold(g),
+plot(g, # layout = layout_with_kk, # layout = layout.fruchterman.reingold(g),
      vertex.frame.color = adjustcolor("black", .4), 
      vertex.size = 1 + (log(deg) * 2),
      vertex.color = vertices$colour,
      vertex.label = vertices$new_names,
-     # vertex.label.color = adjustcolor("black", 1),
-     vertex.label.cex = 1,    
-     edge.color =  adjustcolor("grey", .8),
-     edge.curved = .1,
-     asp = 1)
+     vertex.label.color = adjustcolor("black", 1),
+     vertex.label.cex = .7,    
+     edge.color =  adjustcolor("grey", .5),
+     edge.curved = .3,
+     asp = .8)
 legend(x = -2, y = -0.5, c("gex", "methyl", "pheno"),
        pch = 21, pt.bg = col, pt.cex = 1.5, cex = .7, bty = "n")
+
+plot(g, vertex.label.color = "black", vertex.size = 5, vertex.label = vertices$new_names)
 
 # shortest.path <- shortest.paths(g)
 ```
