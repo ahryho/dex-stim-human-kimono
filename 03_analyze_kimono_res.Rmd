@@ -247,7 +247,7 @@ num.vert <- 50
 
 ggplot(graph.statistics[1:num.vert,], aes(x = 1:num.vert, y = betweennes.vert )) +
   geom_bar(stat = "identity") +
-  labs(x = paste0("First ", num.ensg, " predictors"),
+  labs(x = paste0("First ", num.vert, " predictors"),
        y = "Vertex betweenness")
 ```
 
@@ -329,6 +329,8 @@ plot(g, # layout = layout.fruchterman.reingold(g),
      asp = 1)
 legend(x = -2, y = -0.5, c("gex", "methyl", "pheno"),
        pch = 21, pt.bg = col, pt.cex = 1.5, cex = .7, bty = "n")
+
+# shortest.path <- shortest.paths(g)
 ```
 
 
