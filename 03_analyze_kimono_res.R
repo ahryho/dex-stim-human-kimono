@@ -4,6 +4,7 @@ library(ggplot2)
 library(ggthemes)
 library(RColorBrewer)
 library(dplyr)
+library(igraph)
 
 data.dir.pre   <- "/Users/anastasiia_hry/bio/datasets/kimono/"
 kimono.res.fn  <- paste0(data.dir.pre, "output/kimono_res_veh.csv") # experiment nr 2
@@ -41,10 +42,11 @@ network <- kimono.net %>% filter((value > beta.trsh) | (value < (-beta.trsh))) %
   filter(predictor != '(Intercept)') %>% setDT
 
 # 4. Inspect associations
+
 # cnt <- network[, .(target, relation)] %>%  unique() %>% .[, .N, by = target] #1584
 # agene <- cnt[order(-N)] %>% .[N == 3, target]
 
-kimono.res$target %>%  unique %>%  length # 2696
+kimono.net$target %>%  unique %>%  length # 2696
 network$target %>%  unique %>%  length # 1584
 
 network[relation == "expr_pheno", predictor] %>% unique 
@@ -59,6 +61,7 @@ ggplot(network, aes(relation)) +
 
 network[,.N, by=relation]
 network[, .N, by=predictor][order(-N)]
+
 
 # retained fraction after filtering 
 nrow(network) / nrow(kimono.net) # 0.0586
@@ -116,10 +119,11 @@ network.distr <- degree_distribution(g)
 plot(network.distr)
 
 #betweeness
-betweenes_vertex <- betweenness(g, directed=F, weights=NA)
+betweenes_vertex <- betweenness(g, v = V(g), directed = F, weights=NA)
 # plot all betweeness
 tmp <- as.data.frame(t(t(sort(betweenes_vertex, decreasing = T)))) %>% dplyr::rename(betweenness = V1)
-ggplot(tmp, aes(log(betweenness))) + geom_density() + geom_histogram(bins = 100) 
+ggplot(tmp, aes(log(betweenness))) + 
+  geom_density() + geom_histogram(bins = 100) 
 
 # top 100 genes
 NoI <- t(t(head(sort(betweenes_vertex, decreasing = T), n = 100)))
@@ -164,7 +168,9 @@ plot_network <- function(subnet){
   # library(qgraph)
   
   e <- get.edgelist(g,names=FALSE)
-  # l <- qgraph.layout.fruchtermanreingold(e,vcount=vcount(g),  area=1000*(vcount(g)^2),repulse.rad=100+(vcount(g)^30))
+  # edge.list    <- get.edgelist(g, names = FALSE)
+  # l <- qgraph.layout.fruchtermanreingold(edge.list, vcount = vcount(g),  
+  # area = 100000 * (vcount(g) ^ 2), repulse.rad = 1000 + (vcount(g) ^ 30))
   
 
   actors[, edges:=igraph::degree(g)]

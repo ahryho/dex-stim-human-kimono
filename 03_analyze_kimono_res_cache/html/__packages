@@ -1,0 +1,9 @@
+base
+knitr
+data.table
+tidyr
+dplyr
+ggplot2
+RColorBrewer
+ggthemes
+igraph

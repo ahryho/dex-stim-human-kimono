@@ -38,7 +38,7 @@ if (file.exists(mapping.tbl.fn))
   rownames(mapping.tbl) <- mapping.tbl$Illumina_ID
   
   write.csv2(mapping.tbl, 
-             paste0(output.data.pre, "/mapping/mapping_ilmn_ens.csv"), 
+             paste0(output.data.pre, "/mapping/mapping_ilmn_ensg_gene.csv"), 
              quote = F, row.names = F)
 }
 
