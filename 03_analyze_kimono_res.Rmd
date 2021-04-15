@@ -1,9 +1,9 @@
 ---
 title: "KiMOMo results analysis"
 author: "Anastasiia"
-date: "4/13/2021"
 output:
   html_document:
+    toc: TRUE
     df_print: paged
 ---
 
@@ -185,8 +185,7 @@ kimono.net[,.(target, r_squared)] %>% unique() %>%
   geom_vline(xintercept = rsq.trsh, color = "red") +
     geom_text(aes(x = rsq.trsh / 1e3, label =  paste0("x = ", rsq.trsh), y = 75), colour = "red", angle = 90, text = element_text(size = 5)) +  
   theme_tufte() +
-  labs(title = "Distribution of targets",
-       x = "R sq")
+  labs(title = "Distribution of targets", x = "R sq")
 
 ggplot(kimono.net, aes(value)) + 
   geom_histogram(bins = nbins) +
@@ -198,7 +197,6 @@ ggplot(kimono.net, aes(value)) +
   labs(title = "Distribution of effect size",
        x = "Effect size")
 
-
 ggplot(network, aes(value)) + 
   geom_histogram(bins = nbins) +
   geom_vline(xintercept = beta.trsh, color = "red") +
@@ -209,6 +207,48 @@ ggplot(network, aes(value)) +
   labs(title = "Distribution of effect sizes",
        x = "Effect size") 
 
+```
+
+```{r rsq-distr-before-filtering}
+rsq.df     <- kimono.net %>% 
+  filter(predictor != '(Intercept)') %>% 
+  select(target, r_squared, relation) %>% 
+  unique() 
+
+rsq.tmp.df <- rsq.df %>% mutate(relation = "All")
+rsq.df     <- rbind(rsq.tmp.df, rsq.df)
+
+rsq.df[relation == "expr_pheno", relation := "Biological"]
+rsq.df[relation == "methyl_expr", relation := "Methylation"]
+rsq.df[relation == "prior_expr", relation := "Transcriptome"]
+
+rsq.df$relation <- as.factor(rsq.df$relation)
+
+ggplot(rsq.df, aes(x = relation, y = r_squared, fill = relation)) +
+  geom_boxplot() +
+  theme(legend.position = "none") +
+  labs(title = "Network Rsq on all gene models before filtering",
+       x = "Layer", y = "R sq") 
+  
+```
+
+```{r rsq-distr-after-filtering}
+rsq.df     <- network %>% select(target, r_squared, relation) %>% unique() #%>% setDT
+rsq.tmp.df <- rsq.df %>% mutate(relation = "All")
+rsq.df     <- rbind(rsq.tmp.df, rsq.df)
+
+rsq.df[relation == "expr_pheno", relation := "Biological"]
+rsq.df[relation == "methyl_expr", relation := "Methylation"]
+rsq.df[relation == "prior_expr", relation := "Transcriptome"]
+
+rsq.df$relation <- as.factor(rsq.df$relation)
+
+ggplot(rsq.df, aes(x = relation, y = r_squared, fill = relation)) +
+  geom_boxplot() +
+  theme(legend.position = "none") +
+  labs(title = paste0("Network Rsq on all gene models after filtering for beta = ", beta.trsh, " and R sq = ", rsq.trsh),
+       x = "Layer", y = "R sq") 
+  
 ```
 
 ### 5. Create graph
@@ -304,6 +344,7 @@ vertices[omic == "prior_expr", omic:="expr"]
 vertices <- unique(vertices)
 vertices.unique <- unique(vertices)
 
+summary(vertices)
 # Create graph
 g <- graph_from_data_frame(relations, vertices.unique, directed = FALSE)
 
@@ -335,6 +376,12 @@ vertices[omic == "expr_pheno", colour:=col[3]]
 
 vertices[!is.na(new_names), ][order(-edges)]
 
+summary(vertices)
+
+vertices$new_names <- as.character(vertices$new_names)
+vertices$name <- as.character(vertices$name)
+vertices$colour <- as.character(vertices$colour)
+
 plot(g, # layout = layout_with_kk, # layout = layout.fruchterman.reingold(g),
      vertex.frame.color = adjustcolor("black", .4), 
      vertex.size = 1 + (log(deg) * 2),
@@ -342,13 +389,14 @@ plot(g, # layout = layout_with_kk, # layout = layout.fruchterman.reingold(g),
      vertex.label = vertices$new_names,
      vertex.label.color = adjustcolor("black", 1),
      vertex.label.cex = .7,    
-     edge.color =  adjustcolor("grey", .5),
+     edge.color =  adjustcolor("grey", .8),
      edge.curved = .3,
-     asp = .8)
-legend(x = -2, y = -0.5, c("gex", "methyl", "pheno"),
+     asp = .8,
+     family = "symbol")
+legend("bottomleft", c("gex", "methyl", "pheno"),
        pch = 21, pt.bg = col, pt.cex = 1.5, cex = .7, bty = "n")
 
-plot(g, vertex.label.color = "black", vertex.size = 5, vertex.label = vertices$new_names)
+# plot(g, vertex.label.color = "black", vertex.size = 5, vertex.label = vertices$new_names)
 
 # shortest.path <- shortest.paths(g)
 ```
