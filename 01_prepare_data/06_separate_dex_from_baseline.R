@@ -32,8 +32,10 @@ pheno            <- fread(pheno.fn, na.strings = c('#N/A', ''))
 pheno.full <- fread(pheno.full.fn)
 
 # Check the number of samples in each table are the same
+
 # methyl.sample.ids <- as.data.frame(rownames(beta.kimono.mtrx))
 # colnames(methyl.sample.ids) <- "V1"
+
 methyl.sample.ids <- beta.kimono.mtrx[, 1]
 gex.sample.ids    <- gex.kimono.tbl[, 1]
 
