@@ -14,6 +14,7 @@ kimono.data.pre <- "~/bio/datasets/kimono/"
 
 pheno.fn             <- paste0(src.pheno.data.pre, "pheno_full_for_kimono.csv")
 pheno.dex.kimono.fn  <- paste0(kimono.data.pre, "input/pheno_dex.csv")
+pheno.veh.kimono.fn  <- paste0(kimono.data.pre, "input/pheno_veh.csv")
 gex.kimono.fn        <- paste0(kimono.data.pre, "input/gex.csv")
 map.snp.gene.fn      <- paste0(kimono.data.pre, "/mapping/mapping_snp_gene_distance.csv")
 snp.mtrx.fn          <- paste0(kimono.data.pre, "mapping/snp_mtrx.csv")
@@ -21,6 +22,7 @@ snp.mtrx.fn          <- paste0(kimono.data.pre, "mapping/snp_mtrx.csv")
 # Load data:  GEX for kimono matrix (gene IDs in the columns)
 pheno           <- fread(pheno.fn, na.strings = c('#N/A', ''))
 pheno.dex       <- fread(pheno.dex.kimono.fn, na.strings = c('#N/A', ''))
+pheno.veh       <- fread(pheno.veh.kimono.fn, na.strings = c('#N/A', ''))
 gex             <- fread(gex.kimono.fn)
 map.snp.gene.df <- fread(map.snp.gene.fn)
 snp.mtrx        <- fread(snp.mtrx.fn)
@@ -42,15 +44,28 @@ colnames(snp.kimono.tbl) <- snp.submtrx$sample
 snp.kimono.tbl$DNA_ID    <- rownames(snp.kimono.tbl)
 
 # Order the samples in the snp tbl based on the order in the pheno data
-snp.kimono.tbl <- left_join(snp.kimono.tbl, pheno[Dex == 1, c("DNA_ID", "RNA_ID")], by = "DNA_ID") %>% select(-DNA_ID) %>% setDT
-snp.kimono.tbl <- snp.kimono.tbl[order(match(RNA_ID, pheno.dex$RNA_ID))]
-snp.kimono.tbl <- snp.kimono.tbl %>% select(RNA_ID, everything())
+snp.kimono.dex.tbl <- left_join(snp.kimono.tbl, pheno[Dex == 1, c("DNA_ID", "RNA_ID")], by = "DNA_ID") %>% select(-DNA_ID) %>% setDT
+snp.kimono.dex.tbl <- snp.kimono.dex.tbl[order(match(RNA_ID, pheno.dex$RNA_ID))]
+snp.kimono.dex.tbl <- snp.kimono.dex.tbl %>% select(RNA_ID, everything())
 
+snp.kimono.veh.tbl <- left_join(snp.kimono.tbl, pheno[Dex == 0, c("DNA_ID", "RNA_ID")], by = "DNA_ID") %>% select(-DNA_ID) %>% setDT
+snp.kimono.veh.tbl <- snp.kimono.veh.tbl[order(match(RNA_ID, pheno.veh$RNA_ID))]
+snp.kimono.veh.tbl <- snp.kimono.veh.tbl %>% select(RNA_ID, everything())
+
+snp.kimono.tbl <- rbind(snp.kimono.dex.tbl, snp.kimono.veh.tbl)
 # Save snp kimono table
 
 fwrite(snp.kimono.tbl, 
        paste0(kimono.data.pre, "/input/snp.csv"), 
        quote = F, row.names = F)  
+
+fwrite(snp.kimono.dex.tbl, 
+       paste0(kimono.data.pre, "/input/snp_dex.csv"), 
+       quote = F, row.names = F)  
+
+fwrite(snp.kimono.veh.tbl, 
+       paste0(kimono.data.pre, "/input/snp_veh.csv"), 
+       quote = F, row.names = F) 
 
 # Create gex - snp prior
 

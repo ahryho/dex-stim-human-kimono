@@ -19,7 +19,7 @@ print("read data")
 
 layer.gex    <- fread(paste0(data.dir.pre, "input/gex_dex.csv"))
 layer.methyl <- fread(paste0(data.dir.pre, "input/methylation_beta_mtrx_dex.csv"))
-layer.snp    <- fread(paste0(data.dir.pre, "input/snp.csv"))
+layer.snp    <- fread(paste0(data.dir.pre, "input/snp_dex.csv"))
 layer.pheno  <- fread(paste0(data.dir.pre, "input/pheno_dex.csv"))
 
 # read in mapping (prior)

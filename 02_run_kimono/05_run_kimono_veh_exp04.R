@@ -9,7 +9,7 @@ library(data.table)
 data.dir.pre  <- "/binder/mgp/datasets/2020_DexStim_Array_Human/kimono/"
 # data.dir.pre  <- "~/bio/datasets/kimono/"
 
-kimono.res.fn <- paste0(data.dir.pre, "output/kimono_res_veh.csv")
+kimono.res.fn <- paste0(data.dir.pre, "output_04/kimono_res_veh.csv")
 ###############################################
 ### 2 Data
 ###############################################
@@ -17,16 +17,16 @@ kimono.res.fn <- paste0(data.dir.pre, "output/kimono_res_veh.csv")
 
 print("read data")
 
-layer.gex    <- fread(paste0(data.dir.pre, "input/gex_veh.csv"))
-layer.methyl <- fread(paste0(data.dir.pre, "input/methylation_beta_mtrx_veh.csv"))
-layer.snp    <- fread(paste0(data.dir.pre, "input/snp_veh.csv"))
-layer.pheno  <- fread(paste0(data.dir.pre, "input/pheno_veh.csv"))
+layer.gex    <- fread(paste0(data.dir.pre, "input_04/gex_veh.csv"))
+layer.methyl <- fread(paste0(data.dir.pre, "input_04/methylation_beta_mtrx_veh.csv"))
+layer.snp    <- fread(paste0(data.dir.pre, "input_04/snp_veh.csv"))
+layer.pheno  <- fread(paste0(data.dir.pre, "input_04/pheno_veh.csv"))
 
 # read in mapping (prior)
-prior.gex       <- fread(paste0(data.dir.pre, "input/prior_biogrid_ensg.csv"))
-prior.cpg.gex   <- fread(paste0(data.dir.pre, "input/prior_cpg_ensg.csv"))
-prior.gex.pheno <- fread(paste0(data.dir.pre, "input/prior_gene_pheno.csv"))
-prior.snp.gex   <- fread(paste0(data.dir.pre, "input/prior_snp_ensg.csv"))
+prior.gex       <- fread(paste0(data.dir.pre, "input_04/prior_biogrid_ensg.csv"))
+prior.cpg.gex   <- fread(paste0(data.dir.pre, "input_04/prior_cpg_ensg.csv"))
+prior.gex.pheno <- fread(paste0(data.dir.pre, "input_04/prior_gene_pheno.csv"))
+prior.snp.gex   <- fread(paste0(data.dir.pre, "input_04/prior_snp_ensg.csv"))
 
 print("data read successfully")
 
