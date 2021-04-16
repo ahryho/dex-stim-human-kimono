@@ -1,5 +1,6 @@
 library(optparse)
 library(plyr)
+library(dplyr)
 library(biomaRt)
 
 # CLI parsing
@@ -50,7 +51,7 @@ colnames(map.cpg.gene.tbl) <- c("CpG_ID", "Gene_ID")
 # gene.ids <- unique(unlist(strsplit(map.tbl$UCSC_RefGene_Name, ";")))
 gene.ids <- unique(map.cpg.gene.tbl$Gene_ID)
 
-ensembl     <- useMart("ensembl", dataset = "hsapiens_gene_ensembl") 
+ensembl     <- useEnsembl("ensembl", dataset = "hsapiens_gene_ensembl", mirror = "useast") 
 mapping.tbl <- getBM(attributes = c('external_gene_name', 'ensembl_gene_id'),
                      filters = 'external_gene_name', 
                      values = gene.ids, mart = ensembl)

@@ -20,7 +20,7 @@ option_list = list(
               metavar = "character"),
   make_option(c("-m", "--mapping"),
               type = "character",
-              default = "/mapping/mapping_cpg_gene_ensg.csv",
+              default = "/mapping/mapping_cpg_gene_ensg_full.csv",
               help = "QC methylation beta matrix",
               metavar = "character"),
   make_option(c("-o", "--out"),
@@ -33,7 +33,7 @@ option_list = list(
 opt <- parse_args(OptionParser(option_list=option_list))
 
 library(biomaRt)
-library(plyr)
+library(dplyr)
 library(data.table)
 
 # Set up parameters
@@ -77,6 +77,7 @@ beta.mtrx    <- readRDS(opt$betamtrx)
 cpg.sign.ids <- dmps.df$Probe_Id
 
 beta.kimono.mtrx <- beta.mtrx[rownames(beta.mtrx) %in% cpg.sign.ids, ]
+# beta.kimono.mtrx <- beta.mtrx
 beta.kimono.mtrx <- as.data.frame(t(beta.kimono.mtrx))
 
 fwrite(beta.kimono.mtrx, 

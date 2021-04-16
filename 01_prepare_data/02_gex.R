@@ -45,7 +45,7 @@ if (file.exists(mapping.tbl.fn))
 # Transform GEX data
 system(paste0("ls -lh ", src.data.pre, "20_DEA/02_sign_gex/"))
 
-gex.sign.df.fn <- paste0(src.data.pre, "20_DEA/02_sign_gex/gex_significant_with_beta_20_p_1.txt")
+gex.sign.df.fn <- paste0(src.data.pre, "20_DEA/02_sign_gex/gex_significant_with_beta_0_p_0.txt")
 gex.sign.df    <- read.csv(gex.sign.df.fn, sep = "\t")
 gex.sign.df    <- gex.sign.df[order(gex.sign.df$pFDR),]
 
