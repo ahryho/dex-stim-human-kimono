@@ -32,6 +32,8 @@ pheno            <- fread(pheno.fn, na.strings = c('#N/A', ''))
 pheno.full <- fread(pheno.full.fn)
 
 # Check the number of samples in each table are the same
+# methyl.sample.ids <- as.data.frame(rownames(beta.kimono.mtrx))
+# colnames(methyl.sample.ids) <- "V1"
 methyl.sample.ids <- beta.kimono.mtrx[, 1]
 gex.sample.ids    <- gex.kimono.tbl[, 1]
 
@@ -61,8 +63,8 @@ fwrite(pheno,
 veh.methyl.ids <- pheno.full %>% filter(Dex == 0) %>% dplyr::select(DNAm_ID)
 dex.methyl.ids <- pheno.full %>% filter(Dex == 1) %>% dplyr::select(DNAm_ID)
 
-methyl.veh.kimono.tbl <- beta.kimono.mtrx[beta.kimono.mtrx$V1 %in% veh.methyl.ids$DNAm_ID,]
-methyl.dex.kimono.tbl <- beta.kimono.mtrx[beta.kimono.mtrx$V1 %in% dex.methyl.ids$DNAm_ID,]
+methyl.veh.kimono.tbl <- beta.kimono.mtrx[methyl.sample.ids$V1 %in% veh.methyl.ids$DNAm_ID,]
+methyl.dex.kimono.tbl <- beta.kimono.mtrx[methyl.sample.ids$V1 %in% dex.methyl.ids$DNAm_ID,]
 
 fwrite(methyl.veh.kimono.tbl, 
        methyl.veh.kimono.fn, 
