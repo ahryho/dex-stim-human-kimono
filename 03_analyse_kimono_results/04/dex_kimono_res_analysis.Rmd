@@ -1,5 +1,5 @@
 ---
-title: "KiMOMo results analysis"
+title: "KiMOMo DEX results analysis"
 author: "Anastasiia"
 output:
   html_document:
@@ -33,18 +33,23 @@ knitr::opts_chunk$set(echo = TRUE,
 
 ### Input parameters
 
-<!-- ![](../images/tbl.png){width=1080px} -->
 
+| Data type       | Nr of vars  <br /> original  |Nr of vars  <br /> after mapping | LMER variables                                    | p value <br /> (LMER) | FC value <br /> (LMER) | Additional Info                                   |
+| :-------------- | :--------------------------- |:------------------------------- | :------------------------------------------------ | :-------------------- | :--------------------- |:--------------------------------------------------| 
+| GEX             | 2,444                         | 2,759                          | Sex, Age, BMI, <br /> MDD, BCC                    | 0.01                  | 0.2                    | for kimono input, values are chosen based on pFDR |
+| DNAm            | 3,560                         |                                | Sex, Age, BMI, <br /> MDD, BCC, PC<sub>1,2</sub>  | 0.05                  | 0.0                    | only DMPs                                         |
+| SNP             | 100,149 <br /> &nbsp;        |                                 |                                                   |                       |                        |                                                   |
+| Pheno           | 8                            |                                 |                                                   |                       |                        | Sex, Age, SV<sub>1-3</sub>, PC<sub>1,2</sub>      |
 
-```{r, include = F, echo = F}
-libraries <- c("data.table", "tidyr", "dplyr", "ggplot2", "RColorBrewer", "ggthemes", "igraph", "qgraph", "purr")
+```{r load-libs, include = F, echo = F, warning = F}
+libraries <- c("data.table", "tidyr", "dplyr", "ggplot2", "RColorBrewer", "ggthemes", "igraph", "qgraph", "purr", "DT")
 lapply(libraries, require, character.only = TRUE)
 ```
 
-```{r, include=F}
+```{r setup-params, include=F}
 # Set up parameter
 data.dir.pre    <- "~/bio/datasets/kimono/"
-kimono.res.fn   <- paste0(data.dir.pre, "output_04/kimono_res_dex.csv") # experiment nr 4
+# kimono.res.fn   <- paste0(data.dir.pre, "output_04/kimono_res_dex.csv") # experiment nr 4
 map.ilmn.tbl.fn <- paste0(data.dir.pre, "/mapping/mapping_ilmn_ensg_gene.csv") #"/mapping/mapping_ilmn_ens.csv")
 map.cpg.tbl.fn  <- paste0(data.dir.pre, "/mapping/mapping_cpg_gene_ensg.csv")
 map.snp.tbl.fn  <- paste0(data.dir.pre, "/mapping/mapping_snp_gene_distance.csv")
@@ -52,7 +57,7 @@ map.snp.tbl.fn  <- paste0(data.dir.pre, "/mapping/mapping_snp_gene_distance.csv"
 
 ### 1. Load Kimono results and filter them
 
-```{r, cache = T}
+```{r load-data, cache = F}
 kimono.res.fn         <- paste0(data.dir.pre, "output_04/kimono_res_dex.csv") # experiment nr 4
 kimono.res            <- fread(kimono.res.fn)
 map.ilmn.ensg.tbl     <- read.csv2(map.ilmn.tbl.fn)
@@ -62,13 +67,13 @@ map.snp.gene.dist.tbl <- fread(map.snp.tbl.fn)
 map.ensg.gene.tbl     <- map.ilmn.ensg.tbl[, c("Ensemble_ID", "Gene_ID")] %>% unique() 
 # For multiple SNPs, take the one which is closet to the gene
 map.snp.gene.dist.tbl <- map.snp.gene.dist.tbl %>%
-  na.omit() %>%
-  group_by(SNP) %>% 
-  slice(which.min(Distance))
+   na.omit() #%>%
+  # group_by(SNP) %>% 
+  # dplyr::slice(which.min(Distance))
 ```
 
 ### 2. Explore results
-```{r, cache = F}
+```{r basic-kimono-res, cache = F}
 kimono.net <- kimono.res[value != 0, ] 
 
 paste("Number of successful models:", length(unique(kimono.net$target)))
@@ -77,7 +82,7 @@ paste("Number of unique predictors:", length(unique(kimono.net$predictor)))
 
 ### 2.1. Check-up GEX: mapping kimono results to ILMN IDs
 
-```{r, cache = F}
+```{r map-kimono-res-to-ilmn-ids, cache = F}
 kimono.merged <- merge(kimono.net[, .(target)], 
                   map.ilmn.ensg.tbl, 
                   by.x = "target", by.y = "Ensemble_ID", all.x = T, allow.cartesian = T) %>%  unique()
@@ -85,10 +90,10 @@ kimono.merged <- merge(kimono.net[, .(target)],
 num.ilmn.ids.per.ensg.df <- kimono.merged[, .N, by = target][order(-N)][N > 1,]
 paste("Number of ILMN ID that have multiple ENSG IDs associated:", nrow(num.ilmn.ids.per.ensg.df) )
 
-num.ilmn.ids.per.ensg.df
+# datatable(num.ilmn.ids.per.ensg.df)
 
 "List of ILMN IDs that have multiple ENSG IDs:"
-kimono.merged[target %in% num.ilmn.ids.per.ensg.df$target,]
+datatable(kimono.merged[target %in% num.ilmn.ids.per.ensg.df$target,])
 
 paste("Number of unique ILMN IDs: ", length(unique(kimono.merged$Illumina_ID)))
 paste("Number of unique Gene IDs: ", length(unique(kimono.merged$Gene_ID)))
@@ -98,7 +103,7 @@ paste("Number of unique ENSG IDs: ", length(unique(kimono.merged$target)))
 
 ### 2.2. Check-up methylation data: mapping kimono results to CpG IDs
 
-```{r, cache = F}
+```{r map-kimono-res-to-cpgs, cache = F}
 kimono.merged <- merge(kimono.net[, .(target)], 
                   map.cpg.gene.ensg.tbl, 
                   by.x = "target", by.y = "Ensemble_ID", all.x = T, allow.cartesian = T) %>%  unique() %>% na.omit()
@@ -106,10 +111,10 @@ kimono.merged <- merge(kimono.net[, .(target)],
 num.cpg.ids.per.ensg.df <- kimono.merged[, .N, by = target][order(-N)][N > 1,]
 paste("Number of CpG ID that have multiple ENSG IDs associated:", nrow(num.cpg.ids.per.ensg.df) )
 
-num.cpg.ids.per.ensg.df
+# num.cpg.ids.per.ensg.df
 
 "List of CpG IDs that have multiple ENSG IDs:"
-kimono.merged[target %in% num.cpg.ids.per.ensg.df$target,]
+datatable(kimono.merged[target %in% num.cpg.ids.per.ensg.df$target,])
 
 paste("Number of unique CpG IDs: ", length(unique(kimono.merged$CpG_ID)))
 paste("Number of unique Gene IDs: ", length(unique(kimono.merged$Gene_ID)))
@@ -118,8 +123,8 @@ paste("Number of unique ENSG IDs: ", length(unique(kimono.merged$target)))
 
 ### 3. Create network
 
-```{r}
-beta.trsh <- 0.2
+```{r create-mtwrk-with-beta-rsq}
+beta.trsh <- 0.02
 rsq.trsh  <- 0.01
 
 network <- kimono.net %>% filter((value > beta.trsh) | (value < (-beta.trsh))) %>%
@@ -129,7 +134,7 @@ network <- kimono.net %>% filter((value > beta.trsh) | (value < (-beta.trsh))) %
 
 ### 4. Inspect associations
 
-```{r}
+```{r inspect-associations}
 
 paste("Number of successful models in the network with parameters beta = ", beta.trsh, "and rsq = ", rsq.trsh, ":" , length(unique(network$target)))
 paste("Number of unique predictors in the network with parameters beta = ", beta.trsh, "and rsq = ", rsq.trsh, ":" , length(unique(network$predictor))) 
@@ -141,9 +146,16 @@ paste0("Fraction after filtering (unique predictors): ", length(unique(network$p
 
 ### 4.1. Inspect predictors
 
-```{r}
+```{r inspect-predictors}
 # unique predictors
 unique(network, by = c("relation", "predictor")) %>% .[,.N, by = relation]
+
+unique(network, by = c("relation", "predictor")) %>% 
+  ggplot(., aes(relation)) + 
+    geom_bar(stat = "count", fill = "purple") + 
+    geom_text(stat = "count", aes(label=..count..), 
+              vjust = 1.5, color = "white", position = position_dodge(0.9), size = 3.5) +
+    labs(title = "Nr of relations for predictors")
 
 network[, .N, by = predictor][order(-N)]
 
@@ -154,14 +166,14 @@ network[relation == "snp_expr", predictor] %>% unique %>% head
 
 ```
 
-```{r}
+```{r node-degree-distr}
 degrees        <- dplyr::count(network, predictor) %>% mutate(network = "total")
 degrees.gex    <- dplyr::count(network[network$relation == "prior_expr",], predictor) %>% mutate(network = "gex") 
 degrees.methyl <- dplyr::count(network[network$relation == "methyl_expr",], predictor) %>% mutate(network = "methylation")
 degrees.pheno  <- dplyr::count(network[network$relation == "expr_pheno",], predictor) %>% mutate(network = "pheno")
 degrees.snp    <- dplyr::count(network[network$relation == "snp_expr",], predictor) %>% mutate(network = "snp")
 
-degrees[order(-n),]
+datatable(degrees[order(-n),])
 
 degrees.df         <- rbind(degrees, degrees.gex, degrees.methyl, degrees.pheno, degrees.snp)
 degrees.df$network <- as.factor(degrees.df$network)
@@ -175,7 +187,7 @@ ggplot(degrees.df, aes(x = network, y = n, fill = network)) +
 
 ### 4.2. Inspect relations
 
-```{r}
+```{r inspect-relations}
 network[, .N, by = relation]
 
 ggplot(network, aes(relation)) + 
@@ -183,16 +195,17 @@ ggplot(network, aes(relation)) +
   geom_text(stat = "count", aes(label=..count..), 
             vjust = 1.5, color = "white", position = position_dodge(0.9), size = 3.5)
 ```
+
 ### 4.3. Beta and R-SQ analysis
-```{r}
-nbins = nrow(kimono.net) / 500
+```{r beta-rsq-analysis}
+nbins <- nrow(kimono.net) / 500
 
 kimono.net[,.(target, r_squared)] %>% unique() %>% 
   ggplot(., aes(r_squared)) +
   geom_density() + 
   geom_histogram(bins = nbins) + 
   geom_vline(xintercept = rsq.trsh, color = "red") +
-    geom_text(aes(x = rsq.trsh / 1e3, label =  paste0("x = ", rsq.trsh), y = 75), colour = "red", angle = 90, text = element_text(size = 5)) +  
+    geom_text(aes(x = rsq.trsh / 1e3, label =  paste0("x = ", rsq.trsh), y = 50), colour = "red", angle = 90, text = element_text(size = 5)) +  
   theme_tufte() +
   labs(title = "Distribution of targets", x = "R sq")
 
@@ -208,10 +221,10 @@ ggplot(kimono.net, aes(value)) +
 
 ggplot(network, aes(value)) + 
   geom_histogram(bins = nbins) +
-  geom_vline(xintercept = beta.trsh, color = "red") +
-    geom_text(aes(x = beta.trsh / 1.2, label = paste0("x = ", beta.trsh), y = 150), colour = "red", angle = 90, text = element_text(size = 5)) +  
-  geom_vline(xintercept = -beta.trsh, color = "red") +
-    geom_text(aes(x = -beta.trsh / 1.2, label = paste0("x = -", beta.trsh), y = 150), colour = "red", angle = 90, text = element_text(size = 5)) +
+  # geom_vline(xintercept = beta.trsh, color = "red") +
+  #  geom_text(aes(x = beta.trsh / 1.2, label = paste0("x = ", beta.trsh), y = 150), colour = "red", angle = 90, text = element_text(size = 5)) +  
+  # geom_vline(xintercept = -beta.trsh, color = "red") +
+  #  geom_text(aes(x = -beta.trsh / 1.2, label = paste0("x = -", beta.trsh), y = 150), colour = "red", angle = 90, text = element_text(size = 5)) +
   theme_tufte() + 
   labs(title = "Distribution of effect sizes",
        x = "Effect size") 
@@ -221,7 +234,7 @@ ggplot(network, aes(value)) +
 ```{r rsq-distr-before-filtering}
 rsq.df     <- kimono.net %>% 
   filter(predictor != '(Intercept)') %>% 
-  select(target, r_squared, relation) %>% 
+  dplyr::select(target, r_squared, relation) %>% 
   unique() 
 
 rsq.tmp.df <- rsq.df %>% mutate(relation = "All")
@@ -243,7 +256,7 @@ ggplot(rsq.df, aes(x = relation, y = r_squared, fill = relation)) +
 ```
 
 ```{r rsq-distr-after-filtering}
-rsq.df     <- network %>% select(target, r_squared, relation) %>% unique() #%>% setDT
+rsq.df     <- network %>% dplyr::select(target, r_squared, relation) %>% unique() #%>% setDT
 rsq.tmp.df <- rsq.df %>% mutate(relation = "All")
 rsq.df     <- rbind(rsq.tmp.df, rsq.df)
 
@@ -264,7 +277,7 @@ ggplot(rsq.df, aes(x = relation, y = r_squared, fill = relation)) +
 
 ### 5. Create graph
 
-```{r}
+```{r create-graph}
 vertices <- unique(c(network$predictor, network$target))
 edges    <- data.frame(from = network$predictor,
                        to = network$target,
@@ -278,37 +291,39 @@ g <- graph_from_data_frame(edges, vertices, directed = FALSE)
 print(g)
 ```
 
-### Graph infromation
+### 5.1. Graph infromation
 
-```{r}
+```{r garph-info}
 
 degree          <- degree(g, mode="all")
 degree.distr    <- degree_distribution(g, cumulative = T, mode = "all")
-closeness       <- closeness(g, mode = "all") 
+# closeness       <- closeness(g, mode = "all") 
 betweennes.vert <- betweenness(g, directed = F)
-betweennes.edge <- edge_betweenness(g, directed = F)
+# betweennes.edge <- edge_betweenness(g, directed = F)
 
 graph.statistics <- data.frame(degree,
-                               closeness,
+                               # closeness,
                                betweennes.vert)[order(-betweennes.vert),]
 
 paste("Number of vertices: ", length(vertices))
 paste("Number of vertices with betweenness = 0: ", nrow(graph.statistics[betweennes.vert == 0,]) )
 
-graph.statistics
+datatable(graph.statistics)
 ```
 
 #### Plot betweenness
 
-```{r}
-ggplot(graph.statistics[], aes(log(betweennes.vert))) +
+```{r plot-betweenness-distr}
+ggplot(graph.statistics, aes(betweennes.vert)) +
   geom_density() + 
   geom_histogram(bins = 50) + 
-  labs(x = "log(vertix betweenness)",
+  scale_x_continuous(trans = 'log2',
+                     labels = scales::number_format(accuracy = 1)) +
+  labs(x = "Vertix betweenness",
        y = "Density")
 ```
 
-```{r, include=F}
+```{r plot-betweenness-first-n-vert}
 num.vert <- 50
 
 ggplot(graph.statistics[1:num.vert,], aes(x = 1:num.vert, y = betweennes.vert )) +
@@ -320,20 +335,20 @@ ggplot(graph.statistics[1:num.vert,], aes(x = 1:num.vert, y = betweennes.vert ))
 
 #### Take first 10 ENSG ID for further analysis
 
-```{r}
-num.vert <- 100 + 3
-top.vert.df <- graph.statistics[4:num.vert,] %>% select(betweennes.vert) %>% mutate()
+```{r take-first-n-genes}
+num.vert <- 10 + 3
+top.vert.df <- graph.statistics[1:num.vert,] %>% dplyr::select(betweennes.vert) %>% mutate()
 
 top.vert.df <- merge(top.vert.df, map.ensg.gene.tbl, by.x = "row.names", by.y = "Ensemble_ID") %>% 
-  mutate(Ensemble_ID = Row.names) %>% select(Ensemble_ID, Gene_ID)
+  mutate(Ensemble_ID = Row.names) %>% dplyr::select(Ensemble_ID, Gene_ID)
 
 paste("Number of uniqe ENSG IDs: ", length(unique(top.vert.df$Ensemble_ID)))
 paste("Number of uniqe Gene IDs: ", length(unique(top.vert.df$Gene_ID)))
 ```
 
-### Plot subnetwork for obtained gene list
+### 5.2. Plot subnetwork for obtained gene list
 
-```{r}
+```{r plor-ntwrk}
 top.ensg.ids <- top.vert.df$Ensemble_ID
 
 subnet <- network[((target %in% top.ensg.ids) | (predictor %in% top.ensg.ids)) & predictor!="(Intercept)",]
@@ -350,7 +365,7 @@ relations  <- data.frame(from = subnet$predictor,
 
 
 vertices <- unique(vertices) %>%  setDT
-vertices[,.N, by = name][order(-N)]
+# vertices[,.N, by = name][order(-N)]
 vertices[omic == "prior_expr", omic:="expr"]
 vertices <- unique(vertices)
 
@@ -359,12 +374,8 @@ vertices <- unique(vertices)
 # Create graph
 g <- graph_from_data_frame(relations, vertices, directed = FALSE)
 
-# plot(g, vertex.label.color = "black", vertex.size = 5, vertex.label = NA)
-
-num.edge.thr <- 5
-
+num.edge.thr <- 10
 deg <- degree(g, mode = "all")
-
 vertices[, edges := deg]
 # vertices[order(-edges)]
 
@@ -380,22 +391,22 @@ vertices[edges < num.edge.thr, new_names := NA]
 vertices <- left_join(vertices, map.ensg.gene.tbl, by = c("new_names" = "Ensemble_ID"), all.x = T)
 vertices[omic == "expr", new_names := Gene_ID]
 
-# Map CpG to Gene Symbol
-vertices[, methyl_names := name]
-vertices[omic != "methyl_expr", methyl_names := NA]
+# # Map CpG to Gene Symbol
+# vertices[, methyl_names := name]
+# vertices[omic != "methyl_expr", methyl_names := NA]
 # vertices <- left_join(vertices, map.cpg.gene.ensg.tbl[, c("CpG_ID", "Gene_ID")], by = c("methyl_names" = "CpG_ID"), all.x = T)
-# vertices[omic == "methyl_expr", new_names := Gene_ID.y]
-vertices[omic == "methyl_expr", new_names := name]
+# # vertices[omic == "methyl_expr", new_names := Gene_ID.y]
+# # vertices[omic == "methyl_expr", new_names := name]
+# 
+# # Map SNP to Gene Symbol
+# vertices[, snp_names := name]
+# vertices[omic != "snp_expr", snp_names := NA]
+# vertices <- left_join(vertices, map.snp.gene.dist.tbl[, c("SNP", "Gene_ID")], by = c("snp_names" = "SNP"), all.x = T)
+# # vertices[omic == "snp_expr", new_names := Gene_ID]
+# # vertices[omic == "snp_expr", new_names := name]
 
 # Make bio nodes visible on the plot
 vertices[omic == "expr_pheno", new_names := name]
-
-# Map SNP to Gene Symbol
-vertices[, snp_names := name]
-vertices[omic != "snp_expr", snp_names := NA]
-# vertices <- left_join(vertices, map.snp.gene.dist.tbl[, c("SNP", "Gene_ID")], by = c("snp_names" = "SNP"), all.x = T)
-# vertices[omic == "snp_expr", new_names := Gene_ID]
-vertices[omic == "snp_expr", new_names := name]
 
 # Set colour pallet 
 col <-c(brewer.pal(4, "Set2"))
@@ -404,9 +415,7 @@ vertices[omic == "methyl_expr", colour:=col[2]]
 vertices[omic == "expr_pheno", colour:=col[3]]
 vertices[omic == "snp_expr", colour:=col[4]]
 
-vertices[!is.na(new_names), ][order(-edges)]
-
-# View(cbind(vertex_attr(g)$name, vertices$name, vertices$new_names))
+datatable(vertices[!is.na(new_names),][order(-edges)] %>% dplyr::select(name, omic, edges, new_names))
 
 plot(g, # layout = layout_with_kk, # layout = layout.fruchterman.reingold(g),
      vertex.frame.color = adjustcolor("black", .4), 
@@ -422,10 +431,4 @@ plot(g, # layout = layout_with_kk, # layout = layout.fruchterman.reingold(g),
 legend("bottomleft", c("gex", "methyl", "pheno", "snp"),
        pch = 21, pt.bg = col, pt.cex = 1.5, cex = .7, bty = "n")
 
-# plot(g, vertex.label.color = "black", vertex.size = 5, vertex.label = vertices$new_names)
-
-# shortest.path <- shortest.paths(g)
 ```
-
-
-

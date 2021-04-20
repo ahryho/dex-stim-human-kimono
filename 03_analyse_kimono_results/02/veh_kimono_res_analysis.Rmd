@@ -290,14 +290,16 @@ graph.statistics
 #### Plot betweenness
 
 ```{r}
-ggplot(graph.statistics[], aes(log(betweennes.vert))) +
+ggplot(graph.statistics, aes(betweennes.vert)) +
   geom_density() + 
   geom_histogram(bins = 50) + 
-  labs(x = "log(vertix betweenness)",
+  scale_x_continuous(trans = 'log2',
+                     labels = scales::number_format(accuracy = 1)) +
+  labs(x = "Vertix betweenness",
        y = "Density")
 ```
 
-```{r, include=F}
+```{r}
 num.vert <- 50
 
 ggplot(graph.statistics[1:num.vert,], aes(x = 1:num.vert, y = betweennes.vert )) +

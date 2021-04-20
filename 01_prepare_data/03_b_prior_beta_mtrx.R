@@ -51,7 +51,7 @@ library(data.table)
 
 # Load just dmps
 system(paste0("ls -lh ", opt$directory, "02_dmp"))
-dmps.fn <- paste0(opt$directory, "02_dmp/dmps_significant_with_beta_stat.txt")
+dmps.fn <- paste0(opt$directory, "02_dmp/dmps_significant_with_beta_stat_bcc_pcs_beta_0_p_90.txt")
 dmps.fn <- paste0(opt$directory, opt$data)
 dmps.df <- fread(dmps.fn, sep = "\t")
 

@@ -35,6 +35,8 @@ pheno.full <- fread(pheno.full.fn)
 
 # methyl.sample.ids <- as.data.frame(rownames(beta.kimono.mtrx))
 # colnames(methyl.sample.ids) <- "V1"
+# beta.kimono.mtrx["V1"] <- rownames(beta.kimono.mtrx)
+# beta.kimono.mtrx <- beta.kimono.mtrx %>% dplyr::select(V1, everything())
 
 methyl.sample.ids <- beta.kimono.mtrx[, 1]
 gex.sample.ids    <- gex.kimono.tbl[, 1]
