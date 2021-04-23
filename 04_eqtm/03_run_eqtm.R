@@ -12,9 +12,9 @@ cpg.loc.fn <- paste0(eqtm.in.pre, "cpg_locations.csv")
 ensg.loc.fn <- paste0(eqtm.in.pre, "ensg_locations.csv")
 snp.loc.fn <- paste0(eqtm.in.pre, "snp_locations.csv")
 
-gex.mtrx.fn <- paste0(eqtm.in.pre, "gex_mtrx_", treatment, ".csv")
-methyl.mtrx.fn <- paste0(eqtm.in.pre, "methyl_beta_mtrx_", treatment, ".csv")
-bio.mtrx.fn  <- paste0(eqtm.in.pre, "bio_mtrx_", treatment, ".csv")
+gex.layer.fn <- paste0(eqtm.in.pre, "gex_mtrx_", treatment, ".csv")
+methyl.layer.fn <- paste0(eqtm.in.pre, "methyl_beta_mtrx_", treatment, ".csv")
+bio.layer.fn  <- paste0(eqtm.in.pre, "bio_mtrx_", treatment, ".csv")
 
 eqtm.cis.result.fn <- paste(eqtm.res.pre, "result", "eqtm_cis_result.csv")
 eqtm.trans.result.fn <- paste(eqtm.res.pre, "result", "eqtm_trans_result.csv")
@@ -25,9 +25,9 @@ cpg.loc  <- fread(cpg.loc.fn)
 ensg.loc <- fread(ensg.loc.fn)
 snp.loc <- fread(snp.loc.fn)
 
-gex.layer <- fread(gex.mtrx.fn) 
-methyl.layer <- fread(methyl.mtrx.fn)
-bio.layer <- fread(bio.mtrx.fn)
+# gex.layer <- fread(gex.layer.fn) 
+# methyl.layer <- fread(methyl.layer.fn)
+# bio.layer <- fread(bio.layer.fn)
 
 # Check the colnames of layers are in the same order
 
@@ -77,12 +77,32 @@ run_matrix_eqtl <- function(SNP_file, expression_file, cov_file, outfile_cis, ou
   if(length(cov_file) > 0){
     cvrt$LoadFile(cov_file)  # read file if given
   }
+  
+  me = Matrix_eQTL_main(
+    snps = snps,
+    gene = gene,
+    cvrt = cvrt,
+    output_file_name = outfile_trans,
+    pvOutputThreshold = pvOutputThreshold_tra , #pvOutputThreshold_tra only cis
+    useModel = useModel,
+    errorCovariance = errorCovariance,
+    verbose = TRUE,
+    output_file_name.cis = outfile_cis,
+    pvOutputThreshold.cis = pvOutputThreshold_cis,
+    snpspos = cpg.loc,
+    genepos = ensg.loc,
+    cisDist = cisDist,
+    pvalue.hist = "qqplot",
+    min.pv.by.genesnp = FALSE,
+    noFDRsaveMemory = FALSE)
+  
+  returm (me)
 }
 
 # Run matrixEQTL only for cis and save results into an RData file
-me.all <- run_matrix_eqtl(SNP_file = methyl.layer, 
-                          expression_file = gex.layer, 
-                          cov_file = bio.layerl, 
+me.all <- run_matrix_eqtl(SNP_file = methyl.layer.fn, 
+                          expression_file = gex.layer.fn, 
+                          cov_file = bio.layer.fn, 
                           outfile_cis = eqtm.cis.result.fn, 
                           outfile_trans = eqtm.trans.result.fn, 
                           cis = 5e-2, trans = 0)
