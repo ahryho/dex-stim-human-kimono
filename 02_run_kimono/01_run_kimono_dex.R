@@ -7,7 +7,7 @@ library(data.table)
 
 ###############################################
 data.dir.pre  <- "/binder/mgp/datasets/2020_DexStim_Array_Human/kimono/"
-# data.dir.pre  <- "~/bio/datasets/kimono/"
+data.dir.pre  <- "~/bio/datasets/kimono/"
 
 kimono.res.fn <- paste0(data.dir.pre, "output/kimono_res_dex.csv")
 ###############################################
