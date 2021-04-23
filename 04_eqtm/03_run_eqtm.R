@@ -17,8 +17,8 @@ gex.layer.fn <- paste0(eqtm.in.pre, "gex_mtrx_", treatment, ".csv")
 methyl.layer.fn <- paste0(eqtm.in.pre, "methyl_beta_mtrx_", treatment, ".csv")
 bio.layer.fn  <- paste0(eqtm.in.pre, "bio_mtrx_", treatment, ".csv")
 
-eqtm.cis.result.fn <- paste(eqtm.res.pre, "result", "eqtm_cis_result.csv")
-eqtm.trans.result.fn <- paste(eqtm.res.pre, "result", "eqtm_trans_result.csv")
+eqtm.cis.result.fn <- paste(eqtm.res.pre, "eqtm_cis_result_", treatment, ".csv")
+eqtm.trans.result.fn <- paste(eqtm.res.pre, "eqtm_trans_result_", treatment, ".csv")
 
 # Load data
 
@@ -97,7 +97,7 @@ run_matrix_eqtl <- function(SNP_file, expression_file, cov_file, outfile_cis, ou
     min.pv.by.genesnp = FALSE,
     noFDRsaveMemory = FALSE)
   
-  returm (me)
+  return (me)
 }
 
 # Run matrixEQTL only for cis and save results into an RData file
