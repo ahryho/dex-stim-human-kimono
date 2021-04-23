@@ -1,7 +1,3 @@
-# functions
-source("./0_additionalfunctions.R")
-source("./190715_regression.R")
-
 library(dplyr)
 library(data.table)
 
