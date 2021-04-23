@@ -31,8 +31,8 @@ snp.loc <- fread(snp.loc.fn)
 
 # Check the colnames of layers are in the same order
 
-gex.layer[, colnames(gex.layer) %in% colnames(methyl.layer)]
-bio.layer[, colnames(bio.layer) %in% colnames(methyl.layer)]
+# gex.layer[, colnames(gex.layer) %in% colnames(methyl.layer)]
+# bio.layer[, colnames(bio.layer) %in% colnames(methyl.layer)]
 
 run_matrix_eqtl <- function(SNP_file, expression_file, cov_file, outfile_cis, outfile_trans, cis, trans){
   # 1. Set general parameters
