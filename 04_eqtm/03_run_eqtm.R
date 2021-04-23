@@ -3,7 +3,8 @@ library(data.table)
 
 args <- commandArgs(T)
 treatment <- as.character(args[1]) #"veh"
-eqtm.pre <- as.character(args[2]) #"~/bio/datasets/eQTM/"
+eqtm.pre <- as.character(args[2]) 
+# eqtm.pre <- "~/bio/datasets/eQTM/"
 
 eqtm.in.pre  <- paste0(eqtm.pre, "input/")
 eqtm.res.pre <- paste0(eqtm.pre, "result/")
@@ -71,7 +72,7 @@ run_matrix_eqtl <- function(SNP_file, expression_file, cov_file, outfile_cis, ou
   cvrt = SlicedData$new()
   cvrt$fileDelimiter = ";"      # the TAB character
   cvrt$fileOmitCharacters = "NA" # denote missing values;
-  cvrt$fileSkipRows = 1          # one row of column labels
+  cvrt$fileSkipRows = 2          # one row of column labels + one row of treatment
   cvrt$fileSkipColumns = 1       # one column of row labels
   
   if(length(cov_file) > 0){
