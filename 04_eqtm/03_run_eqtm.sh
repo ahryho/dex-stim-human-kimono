@@ -6,9 +6,9 @@ treatment="veh"
 
 # module load R
 
-partition=pe
-node=4
-memory=200G
+partition=hp
+node=02
+memory=100G
 job_name=eqtm_$treatment
 
 sbatch --job-name=$job_name --part=$partition --nodelist=$partition$node --mem=$memory \

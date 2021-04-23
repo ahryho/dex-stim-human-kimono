@@ -5,8 +5,8 @@ args <- commandArgs(T)
 treatment <- as.character(args[1]) #"veh"
 eqtm.pre <- as.character(args[2]) #"~/bio/datasets/eQTM/"
 
-eqtm.in.pre  <- paste0(eqtm.pre, "input")
-eqtm.res.pre <- paste0(eqtm.pre, "result")
+eqtm.in.pre  <- paste0(eqtm.pre, "input/")
+eqtm.res.pre <- paste0(eqtm.pre, "result/")
 
 cpg.loc.fn <- paste0(eqtm.in.pre, "cpg_locations.csv")
 ensg.loc.fn <- paste0(eqtm.in.pre, "ensg_locations.csv")
