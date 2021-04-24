@@ -75,7 +75,7 @@ RunMatrixEQTL <- function(snp.fn, gex.fn, bio.fn, cis.res.fn, trans.res.fn, cis.
   cvrt$fileSkipRows       <- 2    # one row of column labels + one row of treatment
   cvrt$fileSkipColumns    <- 1    # one column of row labels
   
-  if(length(cov_file) > 0){
+  if(length(bio.fn) > 0){
     cvrt$LoadFile(bio.fn)  # read file if given
   }
   
@@ -107,6 +107,6 @@ me.all <- RunMatrixEQTL(snp.fn = methyl.layer.fn,
                           bio.fn = bio.layer.fn, 
                           cis.res.fn = eqtm.cis.result.fn, 
                           trans.res.fn = eqtm.trans.result.fn, 
-                          ccis.cutoff = 5e-2, trans.cutoff = 0)
+                          cis.cutoff = 5e-2, trans.cutoff = 0)
 
 saveRDS(me.all, file =  paste0(eqtm.res.pre, "eQTM_matrx_", treatment, ".RDS"))

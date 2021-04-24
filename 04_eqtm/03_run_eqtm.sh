@@ -10,9 +10,9 @@ node=02
 memory=100G
 job_name=eqtm_
 
-treatment="veh"
-sbatch --job-name=$job_name$treatment --part=$partition --nodelist=$partition$node --mem=$memory \
-	--wrap="Rscript --vanilla $src_dir/04_eqtm/03_run_eqtm.R $treatment $data_dir"
+# treatment="veh"
+# sbatch --job-name=$job_name$treatment --part=$partition --nodelist=$partition$node --mem=$memory \
+# 	--wrap="Rscript --vanilla $src_dir/04_eqtm/03_run_eqtm.R $treatment $data_dir"
 
 treatment="dex"
 sbatch --job-name=$job_name$treatment --part=$partition --nodelist=$partition$node --mem=$memory \
