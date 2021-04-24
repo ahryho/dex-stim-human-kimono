@@ -101,7 +101,7 @@ RunMatrixEQTL <- function(snp.fn, gex.fn, bio.fn, cis.res.fn, trans.res.fn, cis.
   return (me)
 }
 
-# Run matrixEQTL 
+# Run matrixEQTL w
 me.all <- RunMatrixEQTL(snp.fn = methyl.layer.fn, 
                           gex.fn = gex.layer.fn, 
                           bio.fn = bio.layer.fn, 

@@ -11,6 +11,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r load-libs}
 library(data.table)
+library(dplyr)
+library(ggplot2)
 ```
 
 ```{r setup-param-and-load-data}
@@ -22,7 +24,41 @@ cis.eqtm.veh    <- fread(cis.eqtm.veh.fn)
 ```
 
 ```{r}
+colnames(cis.eqtm.veh)
+fdr.thrsh <- 0.01
+cis.eqtm <- cis.eqtm.veh[FDR < fdr.thrsh] %>% unique()
 
+head(cis.eqtm[order(FDR, decreasing = F)])
+nrow(cis.eqtm[,.(SNP, gene)] %>% unique())
 ```
 
+```{r}
+data.kimono.pre    <- "~/bio/datasets/kimono/"
+map.cpg.tbl.fn  <- paste0(data.kimono.pre, "/mapping/mapping_cpg_gene_ensg.csv")
+map.cpg.gene.ensg.tbl <- read.csv2(map.cpg.tbl.fn)
+
+cis.eqtm.gene <- inner_join(cis.eqtm, map.cpg.gene.ensg.tbl, by = c("gene" = "Ensemble_ID", "SNP" = "CpG_ID")) # %>% dplyr::select(CpG = SNP, ENSG_ID = gene, beta, t-stat, p-value, FDR)
+
+head(cis.eqtm.gene[order(FDR, decreasing = F)])
+```
+
+```{r}
+kimono.res.fn         <- paste0(data.kimono.pre, "output/kimono_res_veh.csv") # experiment nr 5
+kimono.res            <- fread(kimono.res.fn)
+kimono.net <- kimono.res[value != 0, ] 
+kimono.methyl.expr <- kimono.net[relation == "methyl_expr"] %>% unique()
+kimono.methyl.gene <- inner_join(kimono.methyl.expr, map.cpg.gene.ensg.tbl, by = c("target" = "Ensemble_ID", "predictor" = "CpG_ID"))
+
+rsq.trsh  <- 0.01
+
+kimono.methyl.gene <- kimono.methyl.gene %>% # filter((value > beta.trsh) | (value < (-beta.trsh))) %>%
+  filter(r_squared > rsq.trsh) %>%
+  filter(predictor != '(Intercept)') %>% setDT
+
+head(kimono.methyl.gene[order(r_squared, decreasing = F)])
+```
+```{r venndiagram-eqtm-kimono}
+library(ggVennDiagram)
+ggVennDiagram(list(cis_eqtm = cis.eqtm.gene$Gene_ID, kimono = kimono.methyl.gene$Gene_ID), scaled = T) + theme(legend.position = "none")
+```
 
