@@ -77,7 +77,7 @@ fwrite(methyl.mtrx.veh,
 
 fwrite(methyl.mtrx.dex, 
        paste0(output.eqtm.pre, "methyl_beta_mtrx_dex.csv"),
-       quote = F, row.names = T, sep = ";")
+       quote = F, row.names = F, sep = ";")
 
 # Preapare GEX data
 veh.ids <- pheno[Dex == 0 & !is.na(DNAm_ID), .(DNA_ID, RNA_ID)]

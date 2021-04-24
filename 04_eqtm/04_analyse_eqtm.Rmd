@@ -1,0 +1,28 @@
+---
+title: "eQTM_analysis"
+author: "Anastasiia"
+date: "4/24/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load-libs}
+library(data.table)
+```
+
+```{r setup-param-and-load-data}
+eqtm.pre     <- "~/bio/datasets/eQTM/"
+eqtm.res.pre <- paste0(eqtm.pre, "result/")
+
+cis.eqtm.veh.fn <- paste0(eqtm.res.pre, "eqtm_cis_result_veh.csv")
+cis.eqtm.veh    <- fread(cis.eqtm.veh.fn)
+```
+
+```{r}
+
+```
+
+
