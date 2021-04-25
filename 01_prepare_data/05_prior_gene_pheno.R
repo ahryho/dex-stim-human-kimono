@@ -22,10 +22,11 @@ gex   <- fread(gex.kimono.fn)
 gene.ids   <- colnames(gex)[-1]
 covariates <- colnames(pheno)
 
-cov.kimono <- c("Dex", "Sex", "Status", "Age", 
+cov.kimono <- c("Dex", "Sex", "Status", "Age", "BMI_D1",
                 # "Batch",
-                "V1", "V2", "V3",
-                "PC1", "PC2")
+                # "V1", "V2", "V3",
+                "CD8T", "CD4T", "NK", "Bcell", "Mono", "Gran")
+                # "PC1", "PC2")
 
 # Crerate pheno table as an input layer for kimono
 pheno.kimono <- data.frame(pheno)[, c("DNAm_ID", "RNA_ID", cov.kimono) ]
@@ -38,7 +39,7 @@ fwrite(pheno.kimono,
        quote = F, row.names = F, sep = ";") 
 
 # Create all pairs of pheno and gene
-mapping.tbl <- crossing("Gene" = gene.ids, "Cov" = cov.kimono)
+mapping.tbl <- crossing("Gene" = gene.ids, "Cov" = cov.kimono) %>% unique()
 
 # Save final mapping
 fwrite(mapping.tbl, 

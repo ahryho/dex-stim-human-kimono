@@ -18,7 +18,7 @@ db_gene_snp <- fread("~/bio/datasets/kimono/mapping/mapping_snp_gene_distance.cs
 
 snp.kimono.mtrx    <- fread("~/bio/datasets/kimono/input/snp.csv")
 snp.bim            <- fread("~/bio/datasets/snps/Dex_genoData_SNPs.bim")
-pheno              <- fread(pheno.fn, na.strings = c('#N/A', '')) %>% setDT()
+pheno              <- fread(pheno.fn, na.strings = c('#N/A', NA), dec = ",") %>% setDT()
 methyl.mtrx        <- readRDS("~/bio/datasets/methylation/10_final_qc_data/dex_methyl_beta_combat_mtrx.rds")
 gex.mtrx.veh       <- fread("~/bio/datasets/kimono/input/gex_veh.csv")
 gex.mtrx.dex       <- fread("~/bio/datasets/kimono/input/gex_dex.csv")
@@ -166,12 +166,12 @@ fwrite(map.cpg.gene.ensg.ilmn,
 
 # Prepare bio data
 
+pheno <- na.omit(pheno)
 covariates <- colnames(pheno)
 
 cov.list <- c("DNA_ID",
               "Dex", "Sex", "Status", "Age", "BMI_D1",
-              "V1", "V2", "V3",
-              "PC1", "PC2")
+              "CD8T", "CD4T", "NK", "Bcell", "Mono", "Gran")
 
 # VEH
 bio.mtrx <- pheno[Dex == 0 & !is.na(DNAm_ID), ] %>% dplyr::select(cov.list)
