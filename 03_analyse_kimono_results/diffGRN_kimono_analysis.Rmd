@@ -111,11 +111,6 @@ beta_cutoff <- 0.02
 data <- inner_join(kimono.veh, kimono.dex, 
                    by = c("target", "predictor"),
                    suffix = c("_veh", "_dex"))
-# dex_notBase <- anti_join(kimono.res.dex, kimono.res.veh, by = c("target", "predictor"))
-
-# Plot beta values
-# beta_data <- as.data.frame(rbind(cbind(rep("base", times = nrow(data)), data$beta_mean.base, data$relation.base),
-#                                  cbind(rep("dex", times = nrow(data)), data$beta_mean.dex, data$relation.dex)))
 
 data <- data %>% 
   filter(r_squared_veh >= rsquared_cutoff, r_squared_dex >= rsquared_cutoff) %>%
