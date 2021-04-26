@@ -12,7 +12,7 @@ data.dir.pre  <- "/binder/mgp/datasets/2020_DexStim_Array_Human/kimono/"
 args      <- commandArgs(T)
 treatment <- as.character(args[1]) #"dex"
 
-treatment <- "dex"
+# treatment <- "dex"
 
 kimono.res.fn <- paste0(data.dir.pre, "output/kimono_res_", treatment, ".csv")
 ###############################################
