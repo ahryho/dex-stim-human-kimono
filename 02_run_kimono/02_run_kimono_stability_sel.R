@@ -1,8 +1,9 @@
 
 ###############################################
-# data.dir.pre  <- "/binder/mgp/datasets/2020_DexStim_Array_Human/kimono/"
-data.dir.pre  <- "~/bio/datasets/kimono/"
-code.dir.pre <- "~/bio/code/mpip/dex-stim-human-kimono/02_run_kimono/kimono/R/"
+data.dir.pre  <- "/binder/mgp/datasets/2020_DexStim_Array_Human/kimono/"
+# data.dir.pre  <- "~/bio/datasets/kimono/"
+# code.dir.pre <- "~/bio/code/mpip/dex-stim-human-kimono/02_run_kimono/kimono/R/"
+code.dir.pre <- "~/mpip/code/dex-stim-human-kimono/02_run_kimono/kimono/R/"
 
 args      <- commandArgs(T)
 treatment <- as.character(args[1]) #"dex"
