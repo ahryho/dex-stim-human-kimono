@@ -2,6 +2,7 @@
 
 library(data.table)
 library(tidyr)
+library(dplyr)
 
 output.data.pre    <- "~/bio/datasets/kimono/"
 src.pheno.data.pre <- "~/bio/datasets/pheno/" 
@@ -15,7 +16,7 @@ pheno.veh.kimono.fn  <- paste0(output.data.pre, "input/pheno_veh.csv")
 pheno.dex.kimono.fn  <- paste0(output.data.pre, "input/pheno_dex.csv")
 
 # Load pheno data and  GEX for kimono matrix (gene IDs in the columns)
-pheno <- fread(pheno.fn, na.strings = c('#N/A', ''))
+pheno <- fread(pheno.fn, na.strings = c('#N/A', ''), stringsAsFactors = F)
 gex   <- fread(gex.kimono.fn)
 
 # Extract all gene IDs from GEX matrix and required features from pheno table

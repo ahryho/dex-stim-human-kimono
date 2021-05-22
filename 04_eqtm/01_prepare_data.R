@@ -79,6 +79,25 @@ fwrite(methyl.mtrx.dex,
        paste0(output.eqtm.pre, "methyl_beta_mtrx_dex.csv"),
        quote = F, row.names = F, sep = ";")
 
+# Get significant CpGs:
+dmps.fn      <- "~/bio/datasets/methylation/20_DMA/02_dmp/dmps_significant_with_beta_stat_bcc_pcs_beta_0_p_90.txt"
+dmps.df      <- fread(dmps.fn, sep = "\t")
+dmp.sign.ids <- dmps.df$Probe_Id
+
+methyl.mtrx.dex <- fread(paste0(output.eqtm.pre, "methyl_beta_mtrx_dex.csv"))
+methyl.mtrx.veh <- fread(paste0(output.eqtm.pre, "methyl_beta_mtrx_veh.csv"))
+
+methyl.mtrx.dex.sign <- methyl.mtrx.dex[V1 %in% dmp.sign.ids]
+methyl.mtrx.veh.sign <- methyl.mtrx.veh[CpG_ID %in% dmp.sign.ids]
+
+fwrite(methyl.mtrx.veh.sign, 
+       paste0(output.eqtm.pre, "methyl_beta_mtrx_veh_beta_0_p_90.csv"),
+       quote = F, row.names = F, sep = ";")
+
+fwrite(methyl.mtrx.dex.sign, 
+       paste0(output.eqtm.pre, "methyl_beta_mtrx_dex_beta_0_p_90.csv"),
+       quote = F, row.names = F, sep = ";")
+    
 # Preapare GEX data
 veh.ids <- pheno[Dex == 0 & !is.na(DNAm_ID), .(DNA_ID, RNA_ID)]
 dex.ids <- pheno[Dex == 1 & !is.na(DNAm_ID), .(DNA_ID, RNA_ID)]

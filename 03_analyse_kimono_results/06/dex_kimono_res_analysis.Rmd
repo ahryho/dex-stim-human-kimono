@@ -8,7 +8,6 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-library(knitr)
 options(digits = 4, width = 100, stringsAsFactors = T)
 knitr::opts_chunk$set(echo = TRUE,
                       tidy.opts = list(width.cutoff = 100),
@@ -51,7 +50,7 @@ lapply(libraries, require, character.only = TRUE)
 data.dir.pre    <- "~/bio/datasets/kimono/"
 # kimono.res.fn   <- paste0(data.dir.pre, "output/kimono_res_dex.csv") # experiment nr 5
 map.ilmn.tbl.fn <- paste0(data.dir.pre, "/mapping/mapping_ilmn_ensg_gene.csv") #"/mapping/mapping_ilmn_ens.csv")
-map.cpg.tbl.fn  <- paste0(data.dir.pre, "/mapping/mapping_cpg_gene_ensg.csv")
+map.cpg.tbl.fn  <- paste0(data.dir.pre, "/mapping/mapping_cpg_gene_ensg_full.csv")
 map.snp.tbl.fn  <- paste0(data.dir.pre, "/mapping/mapping_snp_gene_distance.csv")
 ```
 
@@ -64,12 +63,28 @@ map.ilmn.ensg.tbl     <- read.csv2(map.ilmn.tbl.fn)
 map.cpg.gene.ensg.tbl <- read.csv2(map.cpg.tbl.fn)
 map.snp.gene.dist.tbl <- fread(map.snp.tbl.fn)
 
+prior.cpg.gex         <- fread(paste0(data.dir.pre, "input/prior_cpg_ensg.csv"))
+layer.gex    <- fread(paste0(data.dir.pre, "input/gex_", treatment, ".csv"))
+
 map.ensg.gene.tbl     <- map.ilmn.ensg.tbl[, c("Ensemble_ID", "Gene_ID")] %>% unique() 
+
 # For multiple SNPs, take the one which is closet to the gene
 map.snp.gene.dist.tbl <- map.snp.gene.dist.tbl %>%
    na.omit() #%>%
   # group_by(SNP) %>% 
   # dplyr::slice(which.min(Distance))
+```
+
+
+```{r load-kimono-input, cache = F}
+prior.cpg.gex <- fread(paste0(data.dir.pre, "input/prior_cpg_ensg.csv"))
+prior.gex     <- fread(paste0(data.dir.pre, "input/prior_biogrid_ensg.csv"))
+layer.gex     <- fread(paste0(data.dir.pre, "input/gex_dex.csv"))
+
+# Of note, in prior_gex, there are less transcripts than in the gex matrix (layer.gex)
+
+# ensg.ids <- colnames(layer.gex)[-1]
+# ensg.ids  %in% prior.cpg.gex$Ensemble_ID %>% length()
 ```
 
 ### 2. Explore results
@@ -88,7 +103,7 @@ kimono.merged <- merge(kimono.net[, .(target)],
                   by.x = "target", by.y = "Ensemble_ID", all.x = T, allow.cartesian = T) %>%  unique()
 
 num.ilmn.ids.per.ensg.df <- kimono.merged[, .N, by = target][order(-N)][N > 1,]
-paste("Number of ILMN ID that have multiple ENSG IDs associated:", nrow(num.ilmn.ids.per.ensg.df) )
+paste("Number of ILMN IDs that have multiple ENSG IDs associated:", nrow(num.ilmn.ids.per.ensg.df) )
 
 # datatable(num.ilmn.ids.per.ensg.df)
 
@@ -98,7 +113,21 @@ datatable(kimono.merged[target %in% num.ilmn.ids.per.ensg.df$target,])
 paste("Number of unique ILMN IDs: ", length(unique(kimono.merged$Illumina_ID)))
 paste("Number of unique Gene IDs: ", length(unique(kimono.merged$Gene_ID)))
 paste("Number of unique ENSG IDs: ", length(unique(kimono.merged$target)))
+```
 
+```{r unique-kimono-res-ensg-plot, cache = F}
+ensg.ids <- colnames(layer.gex)[-1]
+prior.gex.ids  <- as.data.frame(cbind("ENSG_ID" = ensg.ids %>% unique(), "Type" = "Prior"))
+kimono.gex.ids <- as.data.frame(cbind("ENSG_ID" = unique(kimono.net[relation == "prior_expr", predictor]), "Type" = "Kimono Predictor"))
+
+gex.analysis <- rbind(prior.gex.ids, kimono.gex.ids)
+
+ggplot(gex.analysis, aes(Type)) + 
+  geom_bar(stat = "count", fill = "purple") +
+  coord_flip() +
+  geom_text(stat = "count", aes(label=..count..), 
+     hjust = 1.5, color = "white", position = position_dodge(2), size = 3.5) +
+   labs(title = "Nr of unique ENSG IDs")
 ```
 
 ### 2.2. Check-up methylation data: mapping kimono results to CpG IDs
@@ -106,7 +135,7 @@ paste("Number of unique ENSG IDs: ", length(unique(kimono.merged$target)))
 ```{r map-kimono-res-to-cpgs, cache = F}
 kimono.merged <- merge(kimono.net[, .(target)], 
                   map.cpg.gene.ensg.tbl, 
-                  by.x = "target", by.y = "Ensemble_ID", all.x = T, allow.cartesian = T) %>%  unique() %>% na.omit()
+                  by.x = "target", by.y = "Ensemble_ID", all.x = T, allow.cartesian = T) %>% unique() %>% na.omit()
 
 num.cpg.ids.per.ensg.df <- kimono.merged[, .N, by = target][order(-N)][N > 1,]
 paste("Number of CpG ID that have multiple ENSG IDs associated:", nrow(num.cpg.ids.per.ensg.df) )
@@ -121,13 +150,27 @@ paste("Number of unique Gene IDs: ", length(unique(kimono.merged$Gene_ID)))
 paste("Number of unique ENSG IDs: ", length(unique(kimono.merged$target)))
 ```
 
+```{r unique-kimono-res-cpgs-plot, cache = F}
+prior.cpg.ids  <- as.data.frame(cbind("CpG_ID" = unique(prior.cpg.gex$CpG_ID), "Type" = "Prior"))
+kimono.cpg.ids <- as.data.frame(cbind("CpG_ID" = unique(kimono.net[relation == "methyl_expr", predictor]), "Type" = "Kimono Predictor"))
+
+cpgs.analysis <- rbind(prior.cpg.ids, kimono.cpg.ids)
+
+ggplot(cpgs.analysis, aes(Type)) + 
+  geom_bar(stat = "count", fill = "purple") +
+  coord_flip() +
+  geom_text(stat = "count", aes(label=..count..), 
+     hjust = 0.5, color = "black", position = position_dodge(0.9), size = 3.5) +
+   labs(title = "Nr of unique CpGs")
+```
+
 ### 3. Create network
 
 ```{r create-mtwrk-with-beta-rsq}
 beta.trsh <- 0.02
 rsq.trsh  <- 0.01
 
-network <- kimono.net %>% filter((value > beta.trsh) | (value < (-beta.trsh))) %>%
+network <- kimono.net %>% filter(abs(value) > beta.trsh) %>% 
   filter(r_squared > rsq.trsh) %>%
   filter(predictor != '(Intercept)') %>% setDT
 ```
@@ -154,15 +197,15 @@ unique(network, by = c("relation", "predictor")) %>%
   ggplot(., aes(relation)) + 
     geom_bar(stat = "count", fill = "purple") + 
     geom_text(stat = "count", aes(label=..count..), 
-              vjust = 1.5, color = "white", position = position_dodge(0.9), size = 3.5) +
-    labs(title = "Nr of relations for predictors")
+              vjust = -0.5, color = "black", position = position_dodge(0.9), size = 3.5) +
+    labs(title = paste0("Nr of relations for predictors (unique predictors) for beta = ", beta.trsh, " and Rsq = ", rsq.trsh))
 
 network[, .N, by = predictor][order(-N)]
 
 unique(network[relation == "expr_pheno", predictor])
-network[relation == "methyl_expr", predictor] %>% unique %>% head
-network[relation == "prior_expr", predictor] %>% unique %>% head
-network[relation == "snp_expr", predictor] %>% unique %>% head
+network[relation == "methyl_expr", predictor] %>% unique %>% length #head
+network[relation == "prior_expr", predictor] %>% unique %>% length #head
+network[relation == "snp_expr", predictor] %>% unique %>% length #head
 
 ```
 
@@ -180,6 +223,8 @@ degrees.df$network <- as.factor(degrees.df$network)
 
 ggplot(degrees.df, aes(x = network, y = n, fill = network)) +
   geom_boxplot() +
+  scale_y_continuous(trans = 'log2',
+                     labels = scales::number_format(accuracy = 1)) +
   labs(title = "Distribution of node degrees by layer",
        y = "Node degree")
   
@@ -193,7 +238,8 @@ network[, .N, by = relation]
 ggplot(network, aes(relation)) + 
   geom_bar(stat = "count", fill = "purple") + 
   geom_text(stat = "count", aes(label=..count..), 
-            vjust = 1.5, color = "white", position = position_dodge(0.9), size = 3.5)
+            vjust = 1.5, color = "white", position = position_dodge(0.9), size = 3.5) +
+  labs(title = "Nr of relations")
 ```
 
 ### 4.3. Beta and R-SQ analysis

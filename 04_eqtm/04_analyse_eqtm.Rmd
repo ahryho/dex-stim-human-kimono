@@ -15,23 +15,26 @@ library(dplyr)
 library(ggplot2)
 ```
 
+# eQTM analysis
+
 ```{r setup-param-and-load-data}
 eqtm.pre     <- "~/bio/datasets/eQTM/"
 eqtm.res.pre <- paste0(eqtm.pre, "result/")
 
-cis.eqtm.veh.fn <- paste0(eqtm.res.pre, "eqtm_cis_result_veh.csv")
+cis.eqtm.veh.fn <- paste0(eqtm.res.pre, "eqtm_cis_result_dex.csv")
 cis.eqtm.veh    <- fread(cis.eqtm.veh.fn)
 ```
 
 ```{r}
 colnames(cis.eqtm.veh)
 fdr.thrsh <- 0.01
-cis.eqtm <- cis.eqtm.veh[FDR < fdr.thrsh] %>% unique()
+beta.trsh <- 2
+cis.eqtm <- cis.eqtm.veh[FDR < fdr.thrsh & abs(beta) > beta.trsh] %>% unique()
 
 head(cis.eqtm[order(FDR, decreasing = F)])
 nrow(cis.eqtm[,.(SNP, gene)] %>% unique())
 ```
-
+# KiMONo analysis
 ```{r}
 data.kimono.pre    <- "~/bio/datasets/kimono/"
 map.cpg.tbl.fn  <- paste0(data.kimono.pre, "/mapping/mapping_cpg_gene_ensg.csv")
@@ -43,7 +46,7 @@ head(cis.eqtm.gene[order(FDR, decreasing = F)])
 ```
 
 ```{r}
-kimono.res.fn         <- paste0(data.kimono.pre, "output/kimono_res_veh.csv") # experiment nr 5
+kimono.res.fn         <- paste0(data.kimono.pre, "output/kimono_res_dex.csv") # experiment nr 5
 kimono.res            <- fread(kimono.res.fn)
 kimono.net <- kimono.res[value != 0, ] 
 kimono.methyl.expr <- kimono.net[relation == "methyl_expr"] %>% unique()
@@ -57,6 +60,17 @@ kimono.methyl.gene <- kimono.methyl.gene %>% # filter((value > beta.trsh) | (val
 
 head(kimono.methyl.gene[order(r_squared, decreasing = F)])
 ```
+```{r}
+cis.eqtm$SNP %>% unique %>% length
+monigenes <- unique(kimono.methyl.gene$target); length(monigenes) # genes that are found in moni
+myeqtl <- cis.eqtm[ gene %in% monigenes,] # find them in eqtl
+coef2 <- kimono.methyl.gene[ target %in% myeqtl$gene,] # 
+all(as.character(unique(myeqtl$gene)) %in% as.character(unique(coef2$target)))
+paste("further analysis with", length(unique(coef2$target)), "genes that were present in both eQTL and MONI")
+
+```
+
+
 ```{r venndiagram-eqtm-kimono}
 library(ggVennDiagram)
 ggVennDiagram(list(cis_eqtm = cis.eqtm.gene$Gene_ID, kimono = kimono.methyl.gene$Gene_ID), scaled = T) + theme(legend.position = "none")
