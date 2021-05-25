@@ -63,9 +63,6 @@ map.ilmn.ensg.tbl     <- read.csv2(map.ilmn.tbl.fn)
 map.cpg.gene.ensg.tbl <- read.csv2(map.cpg.tbl.fn)
 map.snp.gene.dist.tbl <- fread(map.snp.tbl.fn)
 
-prior.cpg.gex         <- fread(paste0(data.dir.pre, "input/prior_cpg_ensg.csv"))
-layer.gex    <- fread(paste0(data.dir.pre, "input/gex_", treatment, ".csv"))
-
 map.ensg.gene.tbl     <- map.ilmn.ensg.tbl[, c("Ensemble_ID", "Gene_ID")] %>% unique() 
 
 # For multiple SNPs, take the one which is closet to the gene
@@ -77,9 +74,11 @@ map.snp.gene.dist.tbl <- map.snp.gene.dist.tbl %>%
 
 
 ```{r load-kimono-input, cache = F}
+treatment <- "dex"
 prior.cpg.gex <- fread(paste0(data.dir.pre, "input/prior_cpg_ensg.csv"))
 prior.gex     <- fread(paste0(data.dir.pre, "input/prior_biogrid_ensg.csv"))
-layer.gex     <- fread(paste0(data.dir.pre, "input/gex_dex.csv"))
+layer.gex     <- fread(paste0(data.dir.pre, "input/gex_", treatment, ".csv"))
+layer.meth    <- fread(paste0(data.dir.pre, "input/methylation_beta_mtrx_", treatment, ".csv"))
 
 # Of note, in prior_gex, there are less transcripts than in the gex matrix (layer.gex)
 
@@ -151,7 +150,8 @@ paste("Number of unique ENSG IDs: ", length(unique(kimono.merged$target)))
 ```
 
 ```{r unique-kimono-res-cpgs-plot, cache = F}
-prior.cpg.ids  <- as.data.frame(cbind("CpG_ID" = unique(prior.cpg.gex$CpG_ID), "Type" = "Prior"))
+# prior.cpg.ids  <- as.data.frame(cbind("CpG_ID" = unique(prior.cpg.gex$CpG_ID), "Type" = "Prior"))
+prior.cpg.ids  <- as.data.frame(cbind("CpG_ID" = unique(colnames(layer.meth)[2:ncol(layer.meth)]), "Type" = "Prior"))
 kimono.cpg.ids <- as.data.frame(cbind("CpG_ID" = unique(kimono.net[relation == "methyl_expr", predictor]), "Type" = "Kimono Predictor"))
 
 cpgs.analysis <- rbind(prior.cpg.ids, kimono.cpg.ids)
@@ -167,7 +167,7 @@ ggplot(cpgs.analysis, aes(Type)) +
 ### 3. Create network
 
 ```{r create-mtwrk-with-beta-rsq}
-beta.trsh <- 0.02
+beta.trsh <- 0.0 #0.02
 rsq.trsh  <- 0.01
 
 network <- kimono.net %>% filter(abs(value) > beta.trsh) %>% 

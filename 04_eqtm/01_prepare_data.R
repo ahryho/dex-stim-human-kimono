@@ -72,11 +72,11 @@ methyl.mtrx.dex["CpG_ID"] <- rownames(methyl.mtrx.dex)
 methyl.mtrx.dex           <- methyl.mtrx.dex %>% dplyr::select(CpG_ID, everything())
 
 fwrite(methyl.mtrx.veh, 
-       paste0(output.eqtm.pre, "methyl_beta_mtrx_veh.csv"),
+       paste0(output.eqtm.pre, "methyl_beta_mtrx_veh_mad_25.csv"),
        quote = F, row.names = F, sep = ";")
 
 fwrite(methyl.mtrx.dex, 
-       paste0(output.eqtm.pre, "methyl_beta_mtrx_dex.csv"),
+       paste0(output.eqtm.pre, "methyl_beta_mtrx_dex_mad_25.csv"),
        quote = F, row.names = F, sep = ";")
 
 # Get significant CpGs:

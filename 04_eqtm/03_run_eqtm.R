@@ -7,6 +7,7 @@ eqtm.pre <- as.character(args[2])
 
 # treatment <- "dex"
 # eqtm.in.pre <- "~/bio/datasets/eQTM/"
+# eqtm.res.pre <- paste0("~/bio/datasets/eQTM/result/")
 
 eqtm.in.pre  <- paste0(eqtm.pre, "input/")
 eqtm.res.pre <- paste0(eqtm.pre, "result/")
@@ -16,7 +17,7 @@ ensg.loc.fn <- paste0(eqtm.in.pre, "ensg_locations.csv")
 snp.loc.fn <- paste0(eqtm.in.pre, "snp_locations.csv")
 
 gex.layer.fn <- paste0(eqtm.in.pre, "gex_mtrx_", treatment, ".csv")
-methyl.layer.fn <- paste0(eqtm.in.pre, "methyl_beta_mtrx_", treatment, "_beta_0_p_90.csv")
+methyl.layer.fn <- paste0(eqtm.in.pre, "methyl_beta_mtrx_", treatment, "_mad_25.csv") # "_beta_0_p_90.csv")
 bio.layer.fn  <- paste0(eqtm.in.pre, "bio_mtrx_", treatment, ".csv")
 
 eqtm.cis.result.fn <- paste0(eqtm.res.pre, "eqtm_cis_result_", treatment, ".csv")
